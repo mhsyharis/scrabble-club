@@ -11,4 +11,8 @@ class Member extends Model
 
     protected $fillable = ['name', 'email', 'phone', 'joined_at'];
 
+    public function games()
+    {
+        return $this->belongsToMany(Game::class)->withPivot('score')->withTimestamps();
+    }
 }

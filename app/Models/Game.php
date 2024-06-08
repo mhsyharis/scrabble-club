@@ -10,4 +10,9 @@ class Game extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'played_at'];
+
+    public function members()
+    {
+        return $this->belongsToMany(Member::class)->withPivot('score')->withTimestamps();
+    }
 }
