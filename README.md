@@ -72,3 +72,9 @@ A system for a scrabble club to manage and view members' scores and contact deta
 - **CRUD Operations:** Implemented with pagination and search functionality to enhance the user experience and handle large datasets efficiently.
 - **Code Quality:** Adhering to PSR-12 coding standards, using meaningful variable names, and maintaining clean and readable code.
 - **Regular Commits:** Frequent commits with clear messages to track progress and changes systematically.
+
+### Demo
+
+![Demo](https://github.com/mhsyharis/scrabble-club/assets/50806942/6539dab8-d797-4fcb-8218-4544dcf644d2)
+
+
