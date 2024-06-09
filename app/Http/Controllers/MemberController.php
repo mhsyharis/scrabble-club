@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateMemberRequest;
 use App\Models\Member;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
@@ -70,10 +71,13 @@ class MemberController extends Controller
     public function show(Member $member)
     {
         $games = $member->games()->orderBy('played_at', 'desc')->get();
-        $averageScore = $games->avg('pivot.score');
+        $averageScore = number_format($games->avg('pivot.score'), 2);
         $highestScore = $games->max('pivot.score');
         $highestScoreGame = $games->where('pivot.score', $highestScore)->first();
         $highestGameName = $highestScoreGame ? $highestScoreGame->name : null;
+
+        // Calculate the total number of games played
+        $totalGames = $games->count();
 
         return Inertia::render('Members/Profile', [
             'member' => $member,
@@ -82,8 +86,10 @@ class MemberController extends Controller
             'highestScoreDate' => $highestScoreGame ? $highestScoreGame->played_at : null,
             'highestGameName' => $highestGameName,
             'recentGames' => $games,
+            'totalGames' => $totalGames,
         ]);
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -114,5 +120,31 @@ class MemberController extends Controller
     {
         $member->delete();
         return to_route('members.index')->with('success', 'Member deleted successfully.');
+    }
+
+    public function leaderboard()
+    {
+        $topMembers = Member::select('id', 'name')
+            ->withCount([
+                'games as total_games' => function ($query) {
+                    // Count the total number of games for each member
+                    $query->has('members', '>=', 2);
+                },
+                'games as average_score' => function ($query) {
+                    // Calculate the average score for each member
+                    $query->select(DB::raw('AVG(score)'))
+                        ->has('members', '>=', 2);
+                }
+            ])
+            ->orderByDesc('average_score')
+            ->limit(10)
+            ->get()
+            ->map(function ($member) {
+                // Convert null average score to null
+                $member->average_score = $member->average_score ?? null;
+                return $member;
+            });
+
+        return Inertia::render('LeaderBoard', ['topMembers' => $topMembers]);
     }
 }
